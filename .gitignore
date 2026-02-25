@@ -10,3 +10,7 @@ obj/
 # OS
 Thumbs.db
 .DS_Store
+
+# Azure / local secrets
+*.local.json
+*.secrets.json
