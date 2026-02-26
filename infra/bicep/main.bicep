@@ -32,8 +32,18 @@ param integrationAccountSku string = 'Basic'
 @description('Object ID (GUID) of a user or group that will be granted Key Vault secret permissions (DEV convenience).')
 param keyVaultAdminObjectId string
 
+@description('Deploy a private Virtual Network with pre-defined subnets.')
+param deployVnet bool = false
+
+@description('VNet address space (CIDR). Only used when deployVnet is true.')
+param vnetAddressPrefix string = '10.10.0.0/22'
+
+@description('Deploy optional Azure DNS Private Resolver subnets inside the VNet.')
+param deployDnsResolverSubnets bool = false
+
 var baseName = toLower('${ou}-${biz}-${app}-${env}-${regionCode}-${instance}')
 
+var vnetName = 'vnet-${baseName}'
 var logicAppName = 'la-${baseName}'
 var logAnalyticsName = 'log-${baseName}'
 var serviceBusNamespaceName = 'sb-${baseName}'
@@ -46,6 +56,16 @@ var storageAccountName = toLower(take('st${storageStem}${uniqueString(resourceGr
 // Key Vault naming constraints
 var keyVaultStem = take(replace(baseName, '-', ''), 20)
 var keyVaultName = toLower(take('kv${keyVaultStem}', 24))
+
+module vnet 'modules/vnet.bicep' = if (deployVnet) {
+  name: 'vnet'
+  params: {
+    name: vnetName
+    location: location
+    addressPrefix: vnetAddressPrefix
+    deployDnsResolverSubnets: deployDnsResolverSubnets
+  }
+}
 
 module log 'modules/loganalytics.bicep' = {
   name: 'loganalytics'
@@ -138,4 +158,5 @@ output deployedNames object = {
   serviceBusNamespace: serviceBusNamespaceName
   storageAccount: storageAccountName
   integrationAccount: deployIntegrationAccount ? integrationAccountName : ''
+  vnet: deployVnet ? vnetName : ''
 }
