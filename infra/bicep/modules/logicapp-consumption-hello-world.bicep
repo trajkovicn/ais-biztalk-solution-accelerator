@@ -33,7 +33,6 @@ var serviceBusManagedApiId = subscriptionResourceId('Microsoft.Web/locations/man
 resource azureBlobConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: azureBlobConnectionName
   location: location
-  kind: 'V2'
   properties: {
     displayName: azureBlobConnectionName
     api: {
@@ -49,7 +48,6 @@ resource azureBlobConnection 'Microsoft.Web/connections@2016-06-01' = {
 resource serviceBusConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: serviceBusConnectionName
   location: location
-  kind: 'V2'
   properties: {
     displayName: serviceBusConnectionName
     api: {
@@ -133,77 +131,77 @@ resource logicApp 'Microsoft.Logic/workflows@2019-05-01' = {
                   }
                 }
               }
-            }
-            Send_message_to_ServiceBus_queue: {
-              type: 'ApiConnection'
-              runAfter: {
-                Write_request_to_ADLS_Gen2_as_blob: [ 'Succeeded' ]
-              }
-              inputs: {
-                body: {
-                  ContentData: "@{encodeBase64(triggerBody())}"
-                  CorrelationId: "@{outputs('CorrelationId')}"
-                }
-                host: {
-                  connection: {
-                    name: "@parameters('$connections')['servicebus']['connectionId']"
-                  }
-                }
-                method: 'post'
-                path: "/@{encodeURIComponent('${serviceBusQueueName}')}/messages"
-              }
-            }
-            Response_OK: {
-              type: 'Response'
-              runAfter: {
-                Send_message_to_ServiceBus_queue: [ 'Succeeded' ]
-              }
-              inputs: {
-                statusCode: 200
-                body: {
-                  message: 'Hello from AIS BizTalk Accelerator (DEV)'
-                  correlationId: "@{outputs('CorrelationId')}"
-                  storedIn: '${blobContainerName}'
-                  queuedTo: '${serviceBusQueueName}'
-                }
-              }
-            }
-          }
-          else: {
-            actions: {
-              Response_Unsupported_Media_Type: {
-                type: 'Response'
-                inputs: {
-                  statusCode: 415
-                  body: {
-                    message: 'Unsupported Media Type. Send XML with Content-Type application/xml or text/xml.'
-                    correlationId: "@{outputs('CorrelationId')}"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      outputs: {}
-    }
-    parameters: {
-      '$connections': {
-        value: {
-          azureblob: {
-            connectionId: azureBlobConnection.id
-            connectionName: azureBlobConnection.name
-            id: azureBlobManagedApiId
-          }
-          servicebus: {
-            connectionId: serviceBusConnection.id
-            connectionName: serviceBusConnection.name
-            id: serviceBusManagedApiId
-          }
-        }
-      }
-    }
-  }
+}
+Send_message_to_ServiceBus_queue: {
+type: 'ApiConnection'
+runAfter: {
+Write_request_to_ADLS_Gen2_as_blob: [ 'Succeeded' ]
+}
+inputs: {
+body: {
+ContentData: "@{encodeBase64(triggerBody())}"
+CorrelationId: "@{outputs('CorrelationId')}"
+}
+host: {
+connection: {
+name: "@parameters('$connections')['servicebus']['connectionId']"
+}
+}
+method: 'post'
+path: "/@{encodeURIComponent('${serviceBusQueueName}')}/messages"
+}
+}
+Response_OK: {
+type: 'Response'
+runAfter: {
+Send_message_to_ServiceBus_queue: [ 'Succeeded' ]
+}
+inputs: {
+statusCode: 200
+body: {
+message: 'Hello from AIS BizTalk Accelerator (DEV)'
+correlationId: "@{outputs('CorrelationId')}"
+storedIn: '${blobContainerName}'
+queuedTo: '${serviceBusQueueName}'
+}
+}
+}
+}
+else: {
+actions: {
+Response_Unsupported_Media_Type: {
+type: 'Response'
+inputs: {
+statusCode: 415
+body: {
+message: 'Unsupported Media Type. Send XML with Content-Type application/xml or text/xml.'
+correlationId: "@{outputs('CorrelationId')}"
+}
+}
+}
+}
+}
+}
+}
+outputs: {}
+}
+parameters: {
+'$connections': {
+value: {
+azureblob: {
+connectionId: azureBlobConnection.id
+connectionName: azureBlobConnection.name
+id: azureBlobManagedApiId
+}
+servicebus: {
+connectionId: serviceBusConnection.id
+connectionName: serviceBusConnection.name
+id: serviceBusManagedApiId
+}
+}
+}
+}
+}
 }
 
 output logicAppId string = logicApp.id

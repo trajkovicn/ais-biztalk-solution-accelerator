@@ -296,7 +296,6 @@
       "apiVersion": "2016-06-01",
       "name": "[variables('azureBlobConnectionName')]",
       "location": "[parameters('location')]",
-      "kind": "V2",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
       ],
@@ -316,7 +315,6 @@
       "apiVersion": "2016-06-01",
       "name": "[variables('serviceBusConnectionName')]",
       "location": "[parameters('location')]",
-      "kind": "V2",
       "dependsOn": [
         "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('serviceBusNamespaceName'), 'logicapps-dev')]"
       ],
