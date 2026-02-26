@@ -14,19 +14,19 @@ param deployDnsResolverSubnets bool = false
 param snetPrivateEndpointsPrefix string = '10.0.0.0/27'
 
 @description('Subnet CIDR for Service Bus workload')
-param snetServiceBusPrefix string = '10.0.0.32/26'
+param snetServiceBusPrefix string = '10.0.0.64/26'
 
 @description('Subnet CIDR for Key Vault workload')
-param snetKeyVaultPrefix string = '10.0.0.96/26'
+param snetKeyVaultPrefix string = '10.0.0.128/26'
 
 @description('Subnet CIDR for Storage workload')
-param snetStoragePrefix string = '10.0.0.160/26'
+param snetStoragePrefix string = '10.0.0.192/26'
 
 @description('Subnet CIDR for DNS Private Resolver inbound endpoint (optional)')
-param snetDnsInboundPrefix string = '10.0.0.224/28'
+param snetDnsInboundPrefix string = '10.0.1.0/28'
 
 @description('Subnet CIDR for DNS Private Resolver outbound endpoint (optional)')
-param snetDnsOutboundPrefix string = '10.0.0.240/28'
+param snetDnsOutboundPrefix string = '10.0.1.16/28'
 
 var requiredSubnets = [
   {

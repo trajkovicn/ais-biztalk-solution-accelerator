@@ -6,8 +6,8 @@ param ou string
 @description('Abbreviated business area, e.g., tax, rev, ops.')
 param biz string
 
-@description('Workload/app abbreviation, e.g., btmigr, order, edi.')
-param app string = 'btmigr'
+@description('Workload/app abbreviation, e.g., ais, order, edi.')
+param app string = 'ais'
 
 @allowed(['dev'])
 @description('Environment code. This accelerator starts with dev only.')
