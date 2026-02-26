@@ -45,6 +45,27 @@
       "metadata": {
         "description": "Object ID (GUID) of a user or group granted Key Vault secret permissions."
       }
+    },
+    "deployVnet": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Deploy a private Virtual Network with pre-defined subnets."
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.10.0.0/22",
+      "metadata": {
+        "description": "VNet address space (CIDR). Only used when deployVnet is true."
+      }
+    },
+    "deployDnsResolverSubnets": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Deploy optional Azure DNS Private Resolver subnets inside the VNet."
+      }
     }
   },
   "variables": {
@@ -62,9 +83,89 @@
     "blobContainerName": "xml-store",
     "serviceBusQueueName": "inbound",
     "liquidMapName": "hello-xml-to-json",
-    "liquidLogicAppName": "[format('la-{0}-liquid', variables('baseName'))]"
+    "liquidLogicAppName": "[format('la-{0}-liquid', variables('baseName'))]",
+    "vnetName": "[format('vnet-{0}', variables('baseName'))]",
+    "snetPrivateEndpointsPrefix": "10.10.0.0/27",
+    "snetServiceBusPrefix": "10.10.0.32/26",
+    "snetKeyVaultPrefix": "10.10.0.96/26",
+    "snetStoragePrefix": "10.10.0.160/26",
+    "snetDnsInboundPrefix": "10.10.0.224/28",
+    "snetDnsOutboundPrefix": "10.10.0.240/28",
+    "requiredSubnets": [
+      {
+        "name": "snet-private-endpoints",
+        "properties": {
+          "addressPrefix": "[variables('snetPrivateEndpointsPrefix')]",
+          "privateEndpointNetworkPolicies": "Disabled"
+        }
+      },
+      {
+        "name": "snet-servicebus",
+        "properties": {
+          "addressPrefix": "[variables('snetServiceBusPrefix')]"
+        }
+      },
+      {
+        "name": "snet-keyvault",
+        "properties": {
+          "addressPrefix": "[variables('snetKeyVaultPrefix')]"
+        }
+      },
+      {
+        "name": "snet-storage",
+        "properties": {
+          "addressPrefix": "[variables('snetStoragePrefix')]"
+        }
+      }
+    ],
+    "dnsSubnets": [
+      {
+        "name": "snet-dns-inbound",
+        "properties": {
+          "addressPrefix": "[variables('snetDnsInboundPrefix')]",
+          "delegations": [
+            {
+              "name": "Microsoft.Network.dnsResolvers",
+              "properties": {
+                "serviceName": "Microsoft.Network/dnsResolvers"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "snet-dns-outbound",
+        "properties": {
+          "addressPrefix": "[variables('snetDnsOutboundPrefix')]",
+          "delegations": [
+            {
+              "name": "Microsoft.Network.dnsResolvers",
+              "properties": {
+                "serviceName": "Microsoft.Network/dnsResolvers"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "allSubnets": "[if(parameters('deployDnsResolverSubnets'), union(variables('requiredSubnets'), variables('dnsSubnets')), variables('requiredSubnets'))]"
   },
   "resources": [
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2024-05-01",
+      "name": "[variables('vnetName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": "[variables('allSubnets')]"
+      }
+    },
     {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2022-10-01",
@@ -724,6 +825,11 @@
     }
   ],
   "outputs": {
+    "vnetName": {
+      "condition": "[parameters('deployVnet')]",
+      "type": "string",
+      "value": "[variables('vnetName')]"
+    },
     "logicAppName": {
       "type": "string",
       "value": "[variables('logicAppName')]"

@@ -100,6 +100,50 @@
         ]
       },
       {
+        "name": "networking",
+        "label": "Networking (VNet)",
+        "elements": [
+          {
+            "name": "deployVnet",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Deploy a private Virtual Network with pre-defined subnets",
+            "defaultValue": false
+          },
+          {
+            "name": "vnetAddressPrefix",
+            "type": "Microsoft.Common.TextBox",
+            "label": "VNet address space (CIDR)",
+            "defaultValue": "10.10.0.0/22",
+            "visible": "[steps('networking').deployVnet]",
+            "constraints": {
+              "required": true,
+              "validations": [
+                {
+                  "regex": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$",
+                  "message": "Enter a valid CIDR block, e.g. 10.10.0.0/22."
+                }
+              ]
+            }
+          },
+          {
+            "name": "deployDnsResolverSubnets",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Deploy Azure DNS Private Resolver subnets",
+            "visible": "[steps('networking').deployVnet]",
+            "defaultValue": false
+          },
+          {
+            "name": "vnetNote",
+            "type": "Microsoft.Common.InfoBox",
+            "visible": "[steps('networking').deployVnet]",
+            "options": {
+              "icon": "Info",
+              "text": "Creates a VNet with subnets for Private Endpoints, Service Bus, Key Vault, and Storage. Optional DNS Resolver subnets can also be added."
+            }
+          }
+        ]
+      },
+      {
         "name": "integration",
         "label": "Integration Account",
         "elements": [
@@ -181,6 +225,9 @@
       "env": "dev",
       "regionCode": "[steps('naming').regionCode]",
       "instance": "[steps('naming').instance]",
+      "deployVnet": "[steps('networking').deployVnet]",
+      "vnetAddressPrefix": "[steps('networking').vnetAddressPrefix]",
+      "deployDnsResolverSubnets": "[steps('networking').deployDnsResolverSubnets]",
       "deployIntegrationAccount": "[steps('integration').deployIntegrationAccount]",
       "integrationAccountSku": "[steps('integration').integrationAccountSku]",
       "keyVaultAdminObjectId": "[steps('security').keyVaultAdminObjectId]",
