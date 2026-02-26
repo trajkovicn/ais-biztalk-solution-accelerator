@@ -9,7 +9,7 @@ param biz string
 @description('Workload/app abbreviation, e.g., btmigr, order, edi.')
 param app string = 'btmigr'
 
-@allowed([ 'dev' ])
+@allowed(['dev'])
 @description('Environment code. This accelerator starts with dev only.')
 param env string = 'dev'
 
@@ -26,7 +26,7 @@ param location string = resourceGroup().location
 param deployIntegrationAccount bool = true
 
 @description('Integration Account pricing tier.')
-@allowed([ 'Free', 'Basic', 'Standard' ])
+@allowed(['Free', 'Basic', 'Standard'])
 param integrationAccountSku string = 'Basic'
 
 @description('Object ID (GUID) of a user or group that will be granted Key Vault secret permissions (DEV convenience).')
@@ -36,7 +36,7 @@ param keyVaultAdminObjectId string
 param deployVnet bool = false
 
 @description('VNet address space (CIDR). Only used when deployVnet is true.')
-param vnetAddressPrefix string = '10.10.0.0/22'
+param vnetAddressPrefix string = '10.0.0.0/22'
 
 @description('Deploy optional Azure DNS Private Resolver subnets inside the VNet.')
 param deployDnsResolverSubnets bool = false
@@ -110,7 +110,7 @@ resource sbConnSecret 'Microsoft.KeyVault/vaults/secrets@2025-05-01' = {
   properties: {
     value: sbConnectionString
   }
-  dependsOn: [ kv ]
+  dependsOn: [kv]
 }
 
 resource storageKeySecret 'Microsoft.KeyVault/vaults/secrets@2025-05-01' = {
@@ -118,7 +118,7 @@ resource storageKeySecret 'Microsoft.KeyVault/vaults/secrets@2025-05-01' = {
   properties: {
     value: storageKey
   }
-  dependsOn: [ kv ]
+  dependsOn: [kv]
 }
 
 resource storageNameSecret 'Microsoft.KeyVault/vaults/secrets@2025-05-01' = {
@@ -126,7 +126,7 @@ resource storageNameSecret 'Microsoft.KeyVault/vaults/secrets@2025-05-01' = {
   properties: {
     value: storageAccountName
   }
-  dependsOn: [ kv ]
+  dependsOn: [kv]
 }
 
 module ia 'modules/integration-account.bicep' = if (deployIntegrationAccount) {

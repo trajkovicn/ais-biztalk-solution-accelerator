@@ -55,9 +55,9 @@
     },
     "vnetAddressPrefix": {
       "type": "string",
-      "defaultValue": "10.10.0.0/22",
+      "defaultValue": "10.0.0.0/22",
       "metadata": {
-        "description": "VNet address space (CIDR). Only used when deployVnet is true."
+        "description": "VNet address space (CIDR). Only used when deployVnet is true. Prefix length must be between /16 and /22."
       }
     },
     "deployDnsResolverSubnets": {
@@ -85,12 +85,12 @@
     "liquidMapName": "hello-xml-to-json",
     "liquidLogicAppName": "[format('la-{0}-liquid', variables('baseName'))]",
     "vnetName": "[format('vnet-{0}', variables('baseName'))]",
-    "snetPrivateEndpointsPrefix": "10.10.0.0/27",
-    "snetServiceBusPrefix": "10.10.0.32/26",
-    "snetKeyVaultPrefix": "10.10.0.96/26",
-    "snetStoragePrefix": "10.10.0.160/26",
-    "snetDnsInboundPrefix": "10.10.0.224/28",
-    "snetDnsOutboundPrefix": "10.10.0.240/28",
+    "snetPrivateEndpointsPrefix": "10.0.0.0/27",
+    "snetServiceBusPrefix": "10.0.0.32/26",
+    "snetKeyVaultPrefix": "10.0.0.96/26",
+    "snetStoragePrefix": "10.0.0.160/26",
+    "snetDnsInboundPrefix": "10.0.0.224/28",
+    "snetDnsOutboundPrefix": "10.0.0.240/28",
     "requiredSubnets": [
       {
         "name": "snet-private-endpoints",
