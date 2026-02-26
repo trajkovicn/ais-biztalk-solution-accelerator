@@ -159,7 +159,7 @@ BizTalk typically stores connection strings in **binding files** (XML), SSO affi
 
 The accelerator seeds Key Vault with the Storage key, Storage account name, and Service Bus connection string, demonstrating the recommended pattern for secret management in AIS.
 
-### Integration Account — replacing BizTalk Admin Console artefacts
+### Integration Account — replacing BizTalk Admin Console artifacts
 
 The BizTalk Admin Console manages **schemas** (XSD), **maps** (XSLT), **pipelines**, **trading partners**, **agreements**, and **certificates**. All of these are deployed via BizTalk Server and tightly coupled to the runtime.
 
