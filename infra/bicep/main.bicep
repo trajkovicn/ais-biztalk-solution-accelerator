@@ -151,6 +151,29 @@ module hello 'modules/logicapp-consumption-hello-world.bicep' = {
   }
 }
 
+// ── Private Endpoints (only when VNet is deployed) ───────────
+module privateEndpoints 'modules/private-endpoints.bicep' = if (deployVnet) {
+  name: 'privateEndpoints'
+  params: {
+    location: location
+    privateEndpointsSubnetId: vnet.outputs.privateEndpointsSubnetId
+    vnetId: vnet.outputs.id
+    vnetName: vnetName
+    serviceBusId: sb.outputs.namespaceId
+    serviceBusName: serviceBusNamespaceName
+    storageAccountId: st.outputs.id
+    storageAccountName: storageAccountName
+    keyVaultId: kv.outputs.id
+    keyVaultName: keyVaultName
+  }
+  dependsOn: [
+    vnet
+    sb
+    st
+    kv
+  ]
+}
+
 output deployedNames object = {
   keyVault: keyVaultName
   logicApp: logicAppName

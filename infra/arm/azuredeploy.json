@@ -823,6 +823,294 @@
           }
         }
       }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "privatelink.servicebus.windows.net",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "privatelink.blob.core.windows.net",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "privatelink.file.core.windows.net",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "privatelink.vaultcore.azure.net",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2024-06-01",
+      "name": "[format('privatelink.servicebus.windows.net/{0}-servicebus', variables('vnetName'))]",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+        },
+        "registrationEnabled": false
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2024-06-01",
+      "name": "[format('privatelink.blob.core.windows.net/{0}-blob', variables('vnetName'))]",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.blob.core.windows.net')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+        },
+        "registrationEnabled": false
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2024-06-01",
+      "name": "[format('privatelink.file.core.windows.net/{0}-file', variables('vnetName'))]",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.file.core.windows.net')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+        },
+        "registrationEnabled": false
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2024-06-01",
+      "name": "[format('privatelink.vaultcore.azure.net/{0}-vault', variables('vnetName'))]",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.vaultcore.azure.net')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+        },
+        "registrationEnabled": false
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2024-05-01",
+      "name": "[format('pe-{0}', variables('serviceBusNamespaceName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusNamespaceName'))]"
+      ],
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), 'snet-private-endpoints')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[format('pe-{0}', variables('serviceBusNamespaceName'))]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusNamespaceName'))]",
+              "groupIds": [ "namespace" ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2024-05-01",
+      "name": "[format('pe-{0}-blob', variables('storageAccountName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), 'snet-private-endpoints')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[format('pe-{0}-blob', variables('storageAccountName'))]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+              "groupIds": [ "blob" ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2024-05-01",
+      "name": "[format('pe-{0}-file', variables('storageAccountName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), 'snet-private-endpoints')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[format('pe-{0}-file', variables('storageAccountName'))]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+              "groupIds": [ "file" ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2024-05-01",
+      "name": "[format('pe-{0}', variables('keyVaultName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ],
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), 'snet-private-endpoints')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[format('pe-{0}', variables('keyVaultName'))]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+              "groupIds": [ "vault" ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2024-05-01",
+      "name": "[format('pe-{0}/default', variables('serviceBusNamespaceName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', format('pe-{0}', variables('serviceBusNamespaceName')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "servicebus",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.servicebus.windows.net')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2024-05-01",
+      "name": "[format('pe-{0}-blob/default', variables('storageAccountName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', format('pe-{0}-blob', variables('storageAccountName')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.blob.core.windows.net')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "blob",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.blob.core.windows.net')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2024-05-01",
+      "name": "[format('pe-{0}-file/default', variables('storageAccountName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', format('pe-{0}-file', variables('storageAccountName')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.file.core.windows.net')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "file",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.file.core.windows.net')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[parameters('deployVnet')]",
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2024-05-01",
+      "name": "[format('pe-{0}/default', variables('keyVaultName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', format('pe-{0}', variables('keyVaultName')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.vaultcore.azure.net')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "vault",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.vaultcore.azure.net')]"
+            }
+          }
+        ]
+      }
     }
   ],
   "outputs": {
