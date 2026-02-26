@@ -389,6 +389,7 @@
       ],
       "properties": {
         "mapType": "Liquid",
+        "contentType": "text/plain",
         "content": "{  \"from\": \"{{ content.Hello.From }}\",  \"message\": \"{{ content.Hello.Message }}\"}\n"
       }
     },
