@@ -1,8 +1,20 @@
 ![Azure Integration Services](https://img.shields.io/badge/Azure-Integration%20Services-blue)
 ![BizTalk](https://img.shields.io/badge/BizTalk-Server-orange)
 ![BizTalk Migration](https://img.shields.io/badge/BizTalk-Migration-orange)
+![Logic Apps](https://img.shields.io/badge/Azure-Logic%20Apps-blue)
+![Service Bus](https://img.shields.io/badge/Azure-Service%20Bus-blue)
+![Key Vault](https://img.shields.io/badge/Azure-Key%20Vault-blue)
+![ARM Template](https://img.shields.io/badge/ARM-Template-blue)
+![Bicep](https://img.shields.io/badge/Bicep-IaC-blue)
+![Deploy to Azure](https://img.shields.io/badge/Deploy%20to-Azure-blue)
 ![CSharp](https://img.shields.io/badge/C%23-.NET%208.0-blueviolet)
 ![License](https://img.shields.io/badge/License-MIT-green)
+
+<!-- SEO: BizTalk migration to Azure, BizTalk end of life, BizTalk replacement,
+     BizTalk to Logic Apps, BizTalk to Azure Integration Services, BizTalk Server
+     end of support 2030, AIS accelerator, enterprise integration, B2B EDI Azure,
+     BizTalk decommission, orchestration to Logic Apps, MessageBox to Service Bus,
+     BizTalk modernization, cloud integration platform, Azure iPaaS -->
 
 # AIS BizTalk Solution Accelerator
 
@@ -22,10 +34,8 @@ Microsoft has announced that **BizTalk Server will reach end of mainstream suppo
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
 | **Logic Apps**                   | Visual workflow orchestration with 1,000+ connectors. Available in Consumption (serverless, pay-per-execution) and Standard (dedicated, VNet-integrated) hosting models. | Orchestrations, ports, pipelines              |
 | **Service Bus**                  | Enterprise messaging with queues, topics, sessions, and dead-lettering.                                                                                                  | MessageBox, direct-bound ports                |
-| **API Management**               | API gateway with policies, rate limiting, OAuth, and developer portal.                                                                                                   | WCF/REST endpoints, adapters                  |
-| **Event Grid**                   | Event-driven pub/sub for reactive integrations.                                                                                                                          | Polling receive locations                     |
+| **VNet + Private Endpoints**     | Network isolation with private DNS zones, ensuring service-to-service traffic stays off the public internet.                                                             | Corporate network, firewall rules             |
 | **Integration Account**          | B2B hub for trading partners, agreements, schemas (XSD), and maps (XSLT/Liquid).                                                                                         | BizTalk Admin Console, parties, maps, schemas |
-| **Azure Data Factory / Synapse** | Data movement and transformation at scale.                                                                                                                               | Flat-file pipelines, large batch processing   |
 
 ### What problems does AIS solve?
 
@@ -145,7 +155,7 @@ The accelerator provisions an **Azure Data Lake Storage Gen2** account with:
 
 - A **Blob container** (`xml-store`) — the Hello World workflow writes received XML here, demonstrating the "archive a copy" pattern that BizTalk teams typically implement via a passthrough send port.
 - **Azure Files shares** (`drop` and `pickup`) — SMB-mountable shares that replicate the familiar file-drop pattern. On-premises BizTalk FILE receive locations can be pointed at these shares (via Azure File Sync or VPN), enabling a gradual, side-by-side migration.
-- **Hierarchical namespace** enabled — supporting folder-level ACLs and Spark/Synapse interoperability for future data workloads.
+- **Hierarchical namespace** enabled — supporting folder-level ACLs for future data workloads.
 
 ### Key Vault — centralised secret management
 
