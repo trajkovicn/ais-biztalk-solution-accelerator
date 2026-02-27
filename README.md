@@ -30,12 +30,15 @@ Microsoft has announced that **BizTalk Server will reach end of mainstream suppo
 
 **Azure Integration Services (AIS)** is Microsoft's cloud-native integration platform and the natural progression for BizTalk Server customers moving to Azure. AIS is not a single product — it's a suite of fully managed services that, together, replace and extend BizTalk's capabilities:
 
-| AIS Service                      | What it does                                                                                                                                                             | BizTalk equivalent                            |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
-| **Logic Apps**                   | Visual workflow orchestration with 1,000+ connectors. Available in Consumption (serverless, pay-per-execution) and Standard (dedicated, VNet-integrated) hosting models. | Orchestrations, ports, pipelines              |
-| **Service Bus**                  | Enterprise messaging with queues, topics, sessions, and dead-lettering.                                                                                                  | MessageBox, direct-bound ports                |
-| **VNet + Private Endpoints**     | Network isolation with private DNS zones, ensuring service-to-service traffic stays off the public internet.                                                             | Corporate network, firewall rules             |
-| **Integration Account**          | B2B hub for trading partners, agreements, schemas (XSD), and maps (XSLT/Liquid).                                                                                         | BizTalk Admin Console, parties, maps, schemas |
+| AIS Service                  | What it does                                                                                                                                                             | BizTalk equivalent                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| **Logic Apps**               | Visual workflow orchestration with 1,000+ connectors. Available in Consumption (serverless, pay-per-execution) and Standard (dedicated, VNet-integrated) hosting models. | Orchestrations, ports, pipelines              |
+| **Service Bus**              | Enterprise messaging with queues, topics, sessions, and dead-lettering.                                                                                                  | MessageBox, direct-bound ports                |
+| **Key Vault**                | Centralised secret, key, and certificate management with auditing, RBAC, and managed-identity integration.                                                               | SSO affiliate apps, binding-file secrets      |
+| **Azure Storage Account**    | ADLS Gen2 blob storage, Azure Files (SMB shares), and queue storage for message persistence and file-drop patterns.                                                      | FILE/FTP adapters, archive send ports         |
+| **Log Analytics**            | Unified monitoring workspace for diagnostic logs, KQL queries, dashboards, and alerts across all AIS resources.                                                          | BAM, HAT, SCOM health monitoring              |
+| **VNet + Private Endpoints** | Network isolation with private DNS zones, ensuring service-to-service traffic stays off the public internet.                                                             | Corporate network, firewall rules             |
+| **Integration Account**      | B2B hub for trading partners, agreements, schemas (XSD), and maps (XSLT/Liquid).                                                                                         | BizTalk Admin Console, parties, maps, schemas |
 
 ### What problems does AIS solve?
 
@@ -196,9 +199,35 @@ BizTalk provides **Business Activity Monitoring (BAM)** for tracking, **Health a
 
 ### Virtual Network (optional) — network isolation
 
-BizTalk Server typically sits inside a corporate network, with firewall rules controlling access to adapters and endpoints. There is no built-in cloud networking.
+BizTalk Server typically sits inside a corporate network, with firewall rules controlling access to adapters and endpoints. There is no built-in cloud networking — network segmentation is handled entirely outside BizTalk via Windows Firewall, corporate routers, and perimeter appliances.
 
-When enabled, the accelerator deploys a **Virtual Network** with purpose-built subnets and optional **Private Endpoints** that place Service Bus, Storage, and Key Vault traffic on the private network — ensuring that no data traverses the public internet. This replicates the network-isolation posture that BizTalk teams expect in regulated environments.
+**Azure Virtual Network (VNet)** brings that same isolation model into the cloud. When `deployVnet` is set to `true`, the accelerator provisions a `/22` VNet with purpose-built subnets:
+
+| Subnet                      | Default CIDR    | Purpose                                                                                           |
+| --------------------------- | --------------- | ------------------------------------------------------------------------------------------------- |
+| `snet-private-endpoints`    | `10.0.0.0/27`   | Hosts Private Endpoints for Service Bus, Storage (Blob + File), and Key Vault.                    |
+| `snet-servicebus`           | `10.0.0.64/26`  | Reserved for future Service Bus–integrated workloads (e.g., ASE, Functions with VNet injection).  |
+| `snet-keyvault`             | `10.0.0.128/26` | Reserved for workloads that need direct Key Vault network rules.                                  |
+| `snet-storage`              | `10.0.0.192/26` | Reserved for workloads that need direct Storage network rules.                                    |
+| `snet-dns-inbound` _(opt)_  | `10.0.1.0/28`   | Azure DNS Private Resolver inbound endpoint — enables on-premises DNS forwarding into the VNet.   |
+| `snet-dns-outbound` _(opt)_ | `10.0.1.16/28`  | Azure DNS Private Resolver outbound endpoint — enables conditional forwarding to on-premises DNS. |
+
+The last two DNS subnets are deployed only when `deployDnsResolverSubnets` is `true`, supporting hybrid DNS resolution for organizations that need on-premises name resolution alongside Azure Private DNS.
+
+#### Private Endpoints & Private DNS Zones
+
+When the VNet is enabled, the accelerator also deploys **Private Endpoints** in the `snet-private-endpoints` subnet for:
+
+- **Service Bus** (`privatelink.servicebus.windows.net`)
+- **Storage — Blob** (`privatelink.blob.core.windows.net`)
+- **Storage — File** (`privatelink.file.core.windows.net`)
+- **Key Vault** (`privatelink.vaultcore.azure.net`)
+
+Each Private Endpoint is paired with a **Private DNS Zone** and a **Virtual Network Link**, so that DNS queries from within the VNet resolve service FQDNs to the private IP addresses of the endpoints — not the public internet. This ensures all data-plane traffic between AIS resources stays on the Microsoft backbone.
+
+#### Why this matters for BizTalk migrations
+
+In regulated industries (finance, healthcare, government), BizTalk environments are typically air-gapped or heavily firewalled. Migrating to AIS without equivalent network controls is a non-starter. The VNet + Private Endpoints pattern gives security and compliance teams confidence that the cloud integration platform meets the same network-isolation requirements as the on-premises BizTalk infrastructure it replaces.
 
 ---
 
