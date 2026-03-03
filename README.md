@@ -20,8 +20,15 @@
 
 A VS Code–friendly starter accelerator that provisions an Azure Integration Services (AIS) baseline to help customers begin migrating from BizTalk Server.
 
+## Architecture overview
 
-## Why this accelerator exists
+### BizTalk to Azure Integration Services migration architecture
+
+![alt text](image.png)
+
+The diagram above illustrates the target-state architecture for migrating BizTalk Server workloads to Azure Integration Services. On-premises BizTalk environments (Development, Testing, Production) are progressively replaced by cloud-native services within an Azure resource group: **Azure Logic Apps** (Standard) for workflow orchestration, **Azure API Management** as the API gateway secured by Microsoft Entra ID, and **API Center** for publishing and discovering integration interfaces. The platform connects to Microsoft 365, external SaaS applications (Salesforce, Zendesk, Twilio, etc.), and legacy REST/SOAP services — while hybrid connectivity bridges the gap during the migration period.
+
+# Why this accelerator exists
 
 ### BizTalk Server end-of-support
 
@@ -39,6 +46,7 @@ Microsoft has announced that **BizTalk Server will reach end of mainstream suppo
 | **Azure Storage Account**    | ADLS Gen2 blob storage, Azure Files (SMB shares), and queue storage for message persistence and file-drop patterns.                                                      | FILE/FTP adapters, archive send ports         |
 | **Log Analytics**            | Unified monitoring workspace for diagnostic logs, KQL queries, dashboards, and alerts across all AIS resources.                                                          | BAM, HAT, SCOM health monitoring              |
 | **VNet + Private Endpoints** | Network isolation with private DNS zones, ensuring service-to-service traffic stays off the public internet.                                                             | Corporate network, firewall rules             |
+| **Azure Functions** _(opt)_  | Serverless compute for custom code — complex transformations, data enrichment, protocol bridging, and any logic that exceeds a connector's built-in capabilities.        | Custom pipeline components, helper assemblies |
 | **Integration Account**      | B2B hub for trading partners, agreements, schemas (XSD), and maps (XSLT/Liquid).                                                                                         | BizTalk Admin Console, parties, maps, schemas |
 
 ### What problems does AIS solve?
@@ -49,16 +57,31 @@ Microsoft has announced that **BizTalk Server will reach end of mainstream suppo
 - **Deployment agility** — BizTalk deployments involve MSI packages, binding files, and manual steps. AIS supports ARM/Bicep templates, CI/CD pipelines, and one-click deployment (see the button below).
 - **Cost model** — BizTalk licensing is per-core. AIS offers pay-per-use (Consumption) or predictable hosting (Standard), allowing customers to right-size costs to actual workload volumes.
 
+### EDI, HL7, and industry-standard message formats
+
+One of BizTalk Server's strongest differentiators has always been its built-in support for **industry-standard message formats** — particularly **EDI** (X12, EDIFACT) for supply chain, logistics, and finance, and **HL7** (v2.x, FHIR) for healthcare. BizTalk ships with pre-built accelerators, schemas, pipelines, and party/agreement management that let organizations exchange regulated messages with trading partners out of the box.
+
+These capabilities carry forward into Azure Integration Services:
+
+| Format / Standard | BizTalk capability                                                         | AIS equivalent                                                                                                                                      |
+| ----------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **X12 / EDIFACT** | EDI party agreements, schemas, batching, acknowledgements (997/CONTRL)     | **Integration Account** — supports X12 and EDIFACT agreements, schemas, batching, and functional/technical acknowledgements natively in Logic Apps. |
+| **HL7 v2.x**      | BizTalk Accelerator for HL7 (BTAHL7) — parsing, validation, ACK generation | **Logic Apps HL7 connector** + Integration Account schemas — parses HL7 v2.x messages, validates segments, and generates ACK/NAK responses.         |
+| **FHIR (HL7 v4)** | Custom pipelines or third-party adapters                                   | **Azure Health Data Services** (FHIR Server) + Logic Apps — cloud-native FHIR ingestion, validation, and exchange with full REST API support.       |
+| **SWIFT / FIN**   | Custom pipeline components                                                 | **Azure Functions** or partner connectors for SWIFT message parsing and validation, called from Logic Apps workflows.                               |
+
+For **healthcare** organizations, the combination of Logic Apps, Integration Account (HL7/FHIR schemas), and Azure Health Data Services provides a HIPAA-eligible, cloud-native replacement for BTAHL7 — with the added benefit of native FHIR support that BizTalk never offered. For **supply chain and B2B** customers, the Integration Account's EDI capabilities (agreements, batching, acknowledgements) map directly to BizTalk's EDI party management, making the migration path straightforward.
+
 ### Where this accelerator fits in
 
-This repository provides a **ready-to-deploy DEV baseline** that provisions core AIS services in a single click. It is designed to give BizTalk teams a hands-on starting point — not a production architecture — so they can:
+This repository provides a **ready-to-deploy baseline** that provisions core AIS services in a single click. It is designed to give BizTalk teams a hands-on starting point so they can:
 
 1. **Explore** the AIS service landscape with real, deployed resources.
 2. **Validate** integration patterns (receive → persist → queue → transform) against familiar BizTalk concepts.
 3. **Extend** the baseline with their own schemas, maps, trading partners, and workflows.
 4. **Estimate** costs using actual Azure meters before committing to a full migration plan.
 
-## What this deploys (DEV baseline)
+## What this deploys
 
 - Logic App (Consumption) **Hello World** workflow: HTTP POST accepts **XML**, writes to `xml-store`, sends message to Service Bus, returns 200.
 - **Key Vault**: stores generated connection strings/keys as secrets (Storage key, Storage name, Service Bus connection string).
@@ -71,7 +94,7 @@ This repository provides a **ready-to-deploy DEV baseline** that provisions core
 
 ---
 
-## Resource deep dive
+# Resources deep dive
 
 ### Logic App (Consumption) — the heart of the accelerator
 
@@ -93,51 +116,6 @@ In BizTalk Server, an **Orchestration** is the central artefact: a compiled XLAN
 | Compensation                       | Scope-based rollback logic with `runAfter: Failed` paths                                  |
 | Correlation sets                   | Workflow-managed correlation via connector properties or tracked properties               |
 
-#### The Hello World workflow as a learning tool
-
-The accelerator deploys a small but complete workflow that mirrors a classic BizTalk receive-persist-queue pattern:
-
-```
-HTTP POST (XML) ──▶ Generate Correlation ID
-                        │
-                        ▼
-                   Validate Content-Type
-                        │
-              ┌─────────┴──────────┐
-              │ XML                 │ Other
-              ▼                     ▼
-     Write blob to ADLS Gen2   Return 415
-     (hello-<guid>.xml)
-              │
-              ▼
-     Send message to Service Bus
-     (inbound queue, with CorrelationId)
-              │
-              ▼
-     Return 200 JSON response
-```
-
-In BizTalk, implementing this same flow would require:
-
-1. An **HTTP Receive Location** bound to an isolated host (IIS).
-2. A **custom pipeline component** (or XML Disassembler) to validate and promote the content type.
-3. A **Send Port** with a FILE adapter to persist the message.
-4. A second **Send Port** with the SB-Messaging adapter (or WCF-Custom) to publish to Service Bus.
-5. An **Orchestration** to coordinate steps 2 – 4, with a correlation set for the GUID.
-6. **Binding files**, **BTSTask** deployment, and **host-instance restarts**.
-
-In Logic Apps, all of this is expressed in a single JSON workflow definition — deployed in seconds via ARM/Bicep, editable in the portal designer or VS Code, and auto-scaled by the platform.
-
-#### Moving beyond Hello World
-
-Because Logic Apps are additive, extending the workflow is straightforward:
-
-- **Add a transform step** — insert a "Transform XML" action that calls an Integration Account XSLT or Liquid map, replicating BizTalk map execution inside a pipeline.
-- **Add conditional routing** — use a Switch or Condition action to route messages to different queues or endpoints, replacing BizTalk filter expressions on send ports.
-- **Add error handling** — wrap actions in a Scope, configure `runAfter: Failed`, and send failures to a dead-letter queue or alert — replacing BizTalk's exception-handling shapes.
-- **Add approval / long-running patterns** — Consumption Logic Apps natively support waiting for external callbacks (webhooks), replacing BizTalk's listen/delay shapes and human-interaction patterns.
-- **Chain workflows** — call one Logic App from another, replicating BizTalk's "Start Orchestration" and "Call Orchestration" shapes.
-
 ### Service Bus — replacing the MessageBox
 
 In BizTalk, the **MessageBox** (a SQL Server database) is the central publish-subscribe hub: every message passes through it, and subscriptions (filters) route messages to orchestrations and send ports. This is powerful but creates a SQL dependency, requires careful throttling, and is difficult to scale independently.
@@ -149,7 +127,7 @@ In BizTalk, the **MessageBox** (a SQL Server database) is the central publish-su
 - **Sessions** guarantee ordered, exactly-once processing — replacing BizTalk ordered delivery and sequential convoys.
 - **Dead-letter queues** capture failed messages automatically, replacing BizTalk's suspended-instance model with an inspectable, replayable queue.
 
-The accelerator creates a `Standard` namespace with an `inbound` queue, giving you immediate messaging infrastructure to receive, inspect, and replay messages.
+The accelerator creates a `Premium` namespace with queues and topics, giving you immediate messaging infrastructure with VNet integration, publish-subscribe, and the ability to receive, inspect, and replay messages.
 
 ### Storage Account (ADLS Gen2) — replacing file adapters and archive stores
 
@@ -187,6 +165,42 @@ The **Integration Account** is the AIS equivalent — a cloud-hosted repository 
 | Certificates          | BizTalk certificates (signing, encryption) | Upload via Azure portal or ARM when you need AS2/X12 signing                             |
 
 The Liquid map deployed with this accelerator transforms XML to JSON — a common BizTalk-to-AIS migration step, since many downstream systems prefer JSON while legacy sources still send XML.
+
+### Azure Functions (optional) — custom code for transformations and operations
+
+BizTalk Server relies heavily on **custom pipeline components**, **helper assemblies** (called from orchestrations via Expression shapes), and **.NET class libraries** for tasks that fall outside the built-in functoid and adapter capabilities — complex data transformations, database lookups for enrichment, checksum validation, proprietary protocol adapters, and business-rule evaluation. These components are compiled into DLLs, strong-name signed, GAC-deployed, and tightly coupled to the BizTalk runtime.
+
+**Azure Functions** is the cloud-native replacement for all of that custom code. Functions are small, independently deployable units of compute that can be invoked from Logic Apps (via the Azure Functions connector) or triggered directly by Service Bus, HTTP, Timer, Event Grid, and more.
+
+| BizTalk custom-code pattern                       | Azure Functions equivalent                                                                                                                                      |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Custom pipeline component (IComponent)            | HTTP-triggered Function called as a Logic App action — receives the message, processes it, returns the result.                                                  |
+| Helper .NET assembly in orchestration             | Function called from a Logic App workflow via the Azure Functions connector, keeping business logic separated and testable.                                     |
+| Custom functoid (map extension)                   | Function that accepts input values, applies custom logic, and returns the transformed output — referenced from a Liquid/XSLT map or a Logic App Compose action. |
+| BRE policy with .NET fact retriever               | Function that performs a database or API lookup, evaluates rules, and returns a decision — replacing the Business Rules Engine.                                 |
+| Custom adapter (e.g., proprietary MQ, legacy ERP) | Function that bridges protocols — connects to the legacy system using its native SDK/API and exposes a clean HTTP or queue interface for Logic Apps.            |
+| Scheduled SQL polling (SQL adapter receive)       | Timer-triggered Function that queries a database and pushes results to Service Bus or a Logic App HTTP trigger.                                                 |
+| Checksum / hashing / encryption utilities         | Function that performs cryptographic operations on message payloads before or after transmission.                                                               |
+
+#### Why Functions complement Logic Apps
+
+Logic Apps excel at **orchestration** — connecting systems, routing messages, and managing long-running workflows visually. But when a step requires imperative, compute-heavy, or latency-sensitive code (e.g., parsing a complex flat file, calling a legacy COM API, or running a multi-step data-quality check), a Function is the right tool. The pattern is:
+
+```
+Logic App trigger ──▶ ... ──▶ Call Azure Function (custom transform) ──▶ ... ──▶ Send result
+```
+
+This mirrors how BizTalk orchestrations call helper assemblies or route through custom pipeline components — but without the GAC, strong naming, or host-instance restarts. Functions deploy in seconds, scale independently, and can be written in **C#, Python, JavaScript/TypeScript, Java, or PowerShell**.
+
+#### Hosting options
+
+| Plan            | Best for                                                                |
+| --------------- | ----------------------------------------------------------------------- |
+| **Consumption** | Sporadic, event-driven workloads — pay only when the function executes. |
+| **Premium**     | VNet integration, pre-warmed instances, no cold-start — for production. |
+| **Dedicated**   | Running on an existing App Service Plan alongside other web apps.       |
+
+For this accelerator, the optional Function App uses the **Consumption** plan for simplicity. In production BizTalk migration scenarios, the **Premium** plan is recommended for VNet integration and predictable latency.
 
 ### Log Analytics — replacing BAM and health monitoring
 
@@ -236,90 +250,48 @@ In regulated industries (finance, healthcare, government), BizTalk environments 
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ftrajkovicn%2Fais-biztalk-solution-accelerator%2Fmain%2Finfra%2Farm%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Ftrajkovicn%2Fais-biztalk-solution-accelerator%2Fmain%2Finfra%2Farm%2FcreateUiDefinition.json)
 
-## Hello World test
-
-After the deployment completes, a Consumption Logic App named `la-<ou>-<biz>-<app>-<env>-<region>-<instance>` is created with an HTTP POST trigger. This is a fully wired end-to-end sample that demonstrates a typical BizTalk-style "receive → persist → queue" pattern using Azure Integration Services.
-
-### What the workflow does
-
-1. **Receives** an HTTP POST with an XML body.
-2. **Generates** a unique Correlation ID (`guid`) for tracing.
-3. **Validates** the `Content-Type` header — only `application/xml` and `text/xml` are accepted.
-4. **Writes** the raw XML payload as a blob to the `xml-store` container in ADLS Gen2 (filename: `hello-<correlationId>.xml`).
-5. **Sends** the Base64-encoded XML as a message to the Service Bus `inbound` queue, tagged with the same Correlation ID.
-6. **Returns** a `200 OK` JSON response confirming storage and queuing, or `415 Unsupported Media Type` if the content type is wrong.
-
-### Getting the callback URL
-
-1. Open the [Azure portal](https://portal.azure.com) and navigate to the deployed Logic App.
-2. On the **Overview** blade, click the **trigger** (`When_a_HTTP_request_is_received`).
-3. Copy the **HTTP POST URL** — this is the `<CALLBACK_URL>` you'll use below.
-
-### Running the test
-
-```bash
-curl -X POST "<CALLBACK_URL>" \
-  -H "Content-Type: application/xml" \
-  --data '<Hello><From>BizTalk</From><Message>World</Message></Hello>'
-```
-
-### Expected response (`200 OK`)
-
-```json
-{
-  "message": "Hello from AIS BizTalk Accelerator (DEV)",
-  "correlationId": "<guid>",
-  "storedIn": "xml-store",
-  "queuedTo": "inbound"
-}
-```
-
-### What to verify after the call
-
-| Where to look                               | What you should see                                                                     |
-| ------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **Storage Account** → `xml-store` container | A new blob named `hello-<correlationId>.xml` containing the XML payload.                |
-| **Service Bus** → `inbound` queue           | A new message with `ContentData` (Base64-encoded XML) and the matching `CorrelationId`. |
-
-### Error case
-
-If you omit the `Content-Type` header or send a non-XML content type, the Logic App returns:
-
-```json
-{
-  "message": "Unsupported Media Type. Send XML with Content-Type application/xml or text/xml.",
-  "correlationId": "<guid>"
-}
-```
-
-(HTTP `415 Unsupported Media Type`)
-
 ---
 
-## Liquid sample test
+## Cost comparison — BizTalk Server vs. Azure Integration Services
 
-If you deployed the Integration Account, you will also get a second Logic App named `la-...-liquid`. This workflow accepts the same XML payload, transforms it to JSON using the `hello-xml-to-json` Liquid map stored in the Integration Account, and returns the JSON result.
+One of the most common questions during a BizTalk migration assessment is: **"How do the costs compare?"** Below is a T-shirt-sized estimate that maps a typical BizTalk on-premises footprint to an equivalent AIS deployment. These are _directional_ figures to guide planning — actual costs vary by region, licensing agreements, and workload volume.
 
-### Running the Liquid test
+### BizTalk Server (on-premises)
 
-```bash
-curl -X POST "<LIQUID_CALLBACK_URL>" \
-  -H "Content-Type: application/xml" \
-  --data '<Hello><From>BizTalk</From><Message>World</Message></Hello>'
-```
+BizTalk costs are dominated by perpetual licences, Windows Server and SQL Server infrastructure, and the operational overhead of managing physical or virtual machines.
 
-### Expected response
+| Size       | Profile                                                                                         | Estimated annual cost |
+| ---------- | ----------------------------------------------------------------------------------------------- | --------------------: |
+| **Small**  | 1 BizTalk server (2 cores), 1 SQL Server Standard (2 cores), Windows Server, basic HA           |       **$40k – $60k** |
+| **Medium** | 2 BizTalk servers (8 cores total), 1 SQL Server Enterprise (4 cores), clustered SQL, DR standby |     **$120k – $180k** |
+| **Large**  | 4+ BizTalk servers (16+ cores), SQL Server Enterprise AG (8+ cores), multiple environments, SAN |     **$300k – $500k** |
 
-```json
-{
-  "from": "BizTalk",
-  "message": "World"
-}
-```
+_Includes: BizTalk licence per core, Windows Server licence, SQL Server licence, SA/support, hosting (power, rack, VM host), and 1–2 FTE operational overhead. Does not include application development costs._
 
-This demonstrates how Integration Account maps (Liquid/XSLT) can be used in Logic Apps as a replacement for BizTalk Server map functoids.
+### Azure Integration Services (cloud)
 
-## Tools (C#)
+AIS costs shift from capex (licences + hardware) to opex (pay-as-you-go or reserved). There are no server licences, no OS patching, and no SQL infrastructure to manage.
 
-- `tools/IntegrationAccountUploader` — uploads Liquid maps to Integration Account via ARM REST.
-- `tools/KeyVaultSeeder` — sets a Key Vault secret.
+| Size       | Profile                                                                                                                                 | Estimated annual cost |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------: |
+| **Small**  | Logic Apps Consumption (~50k runs/mo), Service Bus Standard (1 namespace), Storage (50 GB), Key Vault, Log Analytics (5 GB/mo)          |         **$3k – $8k** |
+| **Medium** | Logic Apps Standard (1 ASP), Service Bus Premium (1 MU), Integration Account Basic, Storage (500 GB), Key Vault, VNet, Log Analytics    |       **$30k – $60k** |
+| **Large**  | Logic Apps Standard (multi-ASP), Service Bus Premium (4 MU), Integration Account Standard, Storage (2 TB+), VNet + PEs, APIM, Functions |      **$80k – $150k** |
+
+_Includes: compute, messaging, storage, networking, and monitoring. Does not include Azure support plans or application development costs. Estimates based on East US pay-as-you-go pricing — reserved instances and Enterprise Agreement discounts can reduce costs further._
+
+### Side-by-side summary
+
+| Size       | BizTalk (annual) | AIS (annual) | Typical savings |
+| ---------- | ---------------: | -----------: | :-------------- |
+| **Small**  |      $40k – $60k |    $3k – $8k | ~80 – 90%       |
+| **Medium** |    $120k – $180k |  $30k – $60k | ~60 – 75%       |
+| **Large**  |    $300k – $500k | $80k – $150k | ~50 – 70%       |
+
+> **Key takeaway:** Even at the _Large_ tier, AIS typically delivers **50–70% cost savings** over an equivalent BizTalk footprint — before factoring in reduced operational overhead (no OS patching, no SQL tuning, no host-instance management). The savings are most dramatic at the _Small_ tier, where BizTalk's per-core licensing creates a disproportionately high floor cost relative to the workload volume.
+>
+> Use the [Azure Pricing Calculator](https://azure.microsoft.com/pricing/calculator/) to model your specific workload.
+
+## Further reading
+
+- [BizTalk Server migration approaches — Microsoft Learn](https://learn.microsoft.com/en-us/azure/logic-apps/biztalk-server-migration-approaches)

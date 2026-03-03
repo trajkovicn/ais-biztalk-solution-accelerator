@@ -6,7 +6,7 @@
     "config": {
       "isWizard": true,
       "basics": {
-        "description": "Deploy a DEV Azure Integration Services (AIS) baseline: Logic Apps (Consumption) + Service Bus + ADLS Gen2 + Integration Account + Key Vault. Includes Hello World XML ingress and a sample Liquid transform."
+        "description": "Deploy an Azure Integration Services (AIS) baseline: Logic Apps (Consumption) + Service Bus + ADLS Gen2 + Integration Account + Key Vault. Includes Hello World XML ingress and a sample Liquid transform."
       }
     },
     "basics": [
@@ -93,9 +93,19 @@
           },
           {
             "name": "env",
-            "type": "Microsoft.Common.TextBlock",
+            "type": "Microsoft.Common.DropDown",
             "label": "Environment",
-            "defaultValue": "dev (fixed)"
+            "defaultValue": "dev",
+            "constraints": {
+              "allowedValues": [
+                { "label": "dev", "value": "dev" },
+                { "label": "tst", "value": "tst" },
+                { "label": "uat", "value": "uat" },
+                { "label": "stg", "value": "stg" },
+                { "label": "prd", "value": "prd" }
+              ],
+              "required": true
+            }
           }
         ]
       },
@@ -222,7 +232,7 @@
       "ou": "[basics('ou')]",
       "biz": "[basics('biz')]",
       "app": "[basics('app')]",
-      "env": "dev",
+      "env": "[steps('naming').env]",
       "regionCode": "[steps('naming').regionCode]",
       "instance": "[steps('naming').instance]",
       "deployVnet": "[steps('networking').deployVnet]",

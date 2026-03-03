@@ -159,7 +159,7 @@ Send_message_to_ServiceBus_queue: [ 'Succeeded' ]
 inputs: {
 statusCode: 200
 body: {
-message: 'Hello from AIS BizTalk Accelerator (DEV)'
+message: 'Hello from AIS BizTalk Accelerator'
 correlationId: "@{outputs('CorrelationId')}"
 storedIn: '${blobContainerName}'
 queuedTo: '${serviceBusQueueName}'

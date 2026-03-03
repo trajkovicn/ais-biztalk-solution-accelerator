@@ -9,8 +9,8 @@ param biz string
 @description('Workload/app abbreviation, e.g., ais, order, edi.')
 param app string = 'ais'
 
-@allowed(['dev'])
-@description('Environment code. This accelerator starts with dev only.')
+@allowed(['dev', 'tst', 'uat', 'stg', 'prd'])
+@description('Environment code (e.g., dev, tst, uat, stg, prd).')
 param env string = 'dev'
 
 @description('Region short code for naming (e.g., eus, wus2). Customer-supplied to match internal conventions.')
@@ -80,6 +80,7 @@ module sb 'modules/servicebus.bicep' = {
   params: {
     namespaceName: serviceBusNamespaceName
     location: location
+    subnetId: deployVnet ? vnet.outputs.serviceBusSubnetId! : ''
   }
 }
 
