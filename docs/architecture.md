@@ -1,6 +1,6 @@
 # Architecture
 
-This accelerator deploys a DEV Azure Integration Services (AIS) baseline to begin BizTalk migrations.
+This accelerator deploys an Azure Integration Services (AIS) baseline to begin BizTalk migrations.
 
 ## Core resources
 
