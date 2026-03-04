@@ -63,6 +63,7 @@ More information about the BizTalk lifecycle can be found at:
 | Corporate network, firewall rules             | Network isolation with private DNS zones, ensuring service-to-service traffic stays off the public internet.                                                             | **VNet + Private Endpoints** |
 | Custom pipeline components, helper assemblies | Serverless compute for custom code — complex transformations, data enrichment, protocol bridging, and any logic that exceeds a connector's built-in capabilities.        | **Azure Functions** _(opt)_  |
 | BizTalk Admin Console, parties, maps, schemas | B2B hub for trading partners, agreements, schemas (XSD), and maps (XSLT/Liquid).                                                                                         | **Integration Account**      |
+| Performance counters, throttling, SCOM alerts | Real-time metrics, diagnostics, autoscale rules, and intelligent alerting across all AIS resources — with built-in throttling detection and resource health dashboards.  | **Azure Monitor**            |
 
 ### What problems does AIS solve?
 
