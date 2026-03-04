@@ -9,7 +9,7 @@
 ![Deploy to Azure](https://img.shields.io/badge/Deploy%20to-Azure-blue)
 ![CSharp](https://img.shields.io/badge/C%23-.NET%208.0-blueviolet)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Published](https://img.shields.io/badge/Published-March%202026-informational)
+![Published](https://img.shields.io/badge/Published-February%202026-informational)
 ![Last Updated](https://img.shields.io/github/last-commit/trajkovicn/ais-biztalk-solution-accelerator)
 
 <!-- SEO: BizTalk migration to Azure, BizTalk end of life, BizTalk replacement,
