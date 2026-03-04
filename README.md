@@ -16,17 +16,13 @@
      BizTalk decommission, orchestration to Logic Apps, MessageBox to Service Bus,
      BizTalk modernization, cloud integration platform, Azure iPaaS -->
 
-<p align="center">
-  <img src="docs/BizTalk.png" alt="BizTalk Server" height="80" />
-  &nbsp;&nbsp;&nbsp;
-  <img src="https://img.shields.io/badge/→-grey?style=for-the-badge&labelColor=grey&color=grey" height="40" alt="arrow" />
-  &nbsp;&nbsp;&nbsp;
-  <img src="docs/Azure.png" alt="Azure" height="80" />
-</p>
-
 # AIS BizTalk Solution Accelerator
 
-A VS Code–friendly starter accelerator that provisions an Azure Integration Services (AIS) baseline to help customers begin migrating from BizTalk Server.
+<p align="center">
+  <img src="docs/BizTalkToAzure.png" alt="BizTalk Server to Azure" width="20%" />
+</p>
+
+## Your fastest path from BizTalk Server to Azure Integration Services — a production-ready, one-click deployable foundation that provisions the core AIS services, maps every major BizTalk capability to its cloud-native equivalent, and gives your team a running start on migration day.
 
 ## Architecture overview
 
