@@ -18,15 +18,11 @@
 
 # AIS BizTalk Solution Accelerator
 
-<p align="center">
-  <img src="docs/BizTalkToAzure.png" alt="BizTalk Server to Azure" width="20%" />
-</p>
-
-## Your fastest path from BizTalk Server to Azure Integration Services — a production-ready, one-click deployable foundation that provisions the core AIS services, maps every major BizTalk capability to its cloud-native equivalent, and gives your team a running start on migration day.
+### Your fastest path from BizTalk Server to Azure Integration Services — a production-ready, one-click deployable foundation that provisions the core AIS services, maps every major BizTalk capability to its cloud-native equivalent, and gives your team a running start on migration day.
 
 ## Architecture overview
 
-### BizTalk to Azure Integration Services migration architecture
+### BizTalk to Azure Integration Services Migration Architecture
 
 ![alt text](image.png)
 
