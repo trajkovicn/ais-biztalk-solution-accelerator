@@ -10,13 +10,6 @@ param vnetId string
 @description('VNet name (used for DNS zone virtual-network-link naming).')
 param vnetName string
 
-// ── Service Bus ──────────────────────────────────────────────
-@description('Resource ID of the Service Bus namespace.')
-param serviceBusId string
-
-@description('Service Bus namespace name (used in PE naming).')
-param serviceBusName string
-
 // ── Storage Account ──────────────────────────────────────────
 @description('Resource ID of the Storage Account.')
 param storageAccountId string
@@ -34,11 +27,6 @@ param keyVaultName string
 // ══════════════════════════════════════════════════════════════
 // Private DNS Zones
 // ══════════════════════════════════════════════════════════════
-
-resource dnsServiceBus 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.servicebus.windows.net'
-  location: 'global'
-}
 
 resource dnsBlob 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.blob.core.windows.net'
@@ -58,16 +46,6 @@ resource dnsVault 'Microsoft.Network/privateDnsZones@2024-06-01' = {
 // ══════════════════════════════════════════════════════════════
 // VNet links (so DNS queries inside the VNet resolve to PEs)
 // ══════════════════════════════════════════════════════════════
-
-resource linkServiceBus 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
-  parent: dnsServiceBus
-  name: '${vnetName}-servicebus'
-  location: 'global'
-  properties: {
-    virtualNetwork: { id: vnetId }
-    registrationEnabled: false
-  }
-}
 
 resource linkBlob 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
   parent: dnsBlob
@@ -102,23 +80,6 @@ resource linkVault 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-0
 // ══════════════════════════════════════════════════════════════
 // Private Endpoints
 // ══════════════════════════════════════════════════════════════
-
-resource peServiceBus 'Microsoft.Network/privateEndpoints@2024-05-01' = {
-  name: 'pe-${serviceBusName}'
-  location: location
-  properties: {
-    subnet: { id: privateEndpointsSubnetId }
-    privateLinkServiceConnections: [
-      {
-        name: 'pe-${serviceBusName}'
-        properties: {
-          privateLinkServiceId: serviceBusId
-          groupIds: ['namespace']
-        }
-      }
-    ]
-  }
-}
 
 resource peBlob 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: 'pe-${storageAccountName}-blob'
@@ -174,21 +135,6 @@ resource peVault 'Microsoft.Network/privateEndpoints@2024-05-01' = {
 // ══════════════════════════════════════════════════════════════
 // DNS Zone Groups (auto-register PE IP in the private DNS zone)
 // ══════════════════════════════════════════════════════════════
-
-resource dnsGroupServiceBus 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = {
-  parent: peServiceBus
-  name: 'default'
-  properties: {
-    privateDnsZoneConfigs: [
-      {
-        name: 'servicebus'
-        properties: {
-          privateDnsZoneId: dnsServiceBus.id
-        }
-      }
-    ]
-  }
-}
 
 resource dnsGroupBlob 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = {
   parent: peBlob

@@ -80,7 +80,6 @@ module sb 'modules/servicebus.bicep' = {
   params: {
     namespaceName: serviceBusNamespaceName
     location: location
-    subnetId: deployVnet ? vnet.outputs.serviceBusSubnetId! : ''
   }
 }
 
@@ -160,8 +159,6 @@ module privateEndpoints 'modules/private-endpoints.bicep' = if (deployVnet) {
     privateEndpointsSubnetId: vnet.outputs.privateEndpointsSubnetId
     vnetId: vnet.outputs.id
     vnetName: vnetName
-    serviceBusId: sb.outputs.namespaceId
-    serviceBusName: serviceBusNamespaceName
     storageAccountId: st.outputs.id
     storageAccountName: storageAccountName
     keyVaultId: kv.outputs.id
