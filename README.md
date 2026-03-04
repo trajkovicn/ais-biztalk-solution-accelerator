@@ -32,7 +32,18 @@ The diagram above illustrates the target-state architecture for migrating BizTal
 
 ### BizTalk Server end-of-support
 
-Microsoft has announced that **BizTalk Server will reach end of mainstream support in April 2030**. After that date, BizTalk Server will no longer receive feature updates, and extended support will be limited. Organizations that depend on BizTalk for B2B, EDI, EAI, and messaging workloads need to begin planning their migration path now — not when the clock runs out.
+Microsoft has announced that **BizTalk Server 2020 will be the final version of BizTalk, and will reach end of support in April 2030**. After that date, BizTalk Server will no longer receive feature updates, security updates, nor any technical support from Microsoft.
+
+Even before April 2030, there are important dates to consider:
+
+- End of support is set for January 2030 for SQL Server 2019.
+- Service Bus Messaging Protocol (SBMP) will be retired Sept 30, 2026. Azure integrations after this date will require upgrading to Advanced Message Queuing Protocol (AMQP).
+- BizTalk mainstream support will end April 2028, and Extended Support will need to be purchased for non-security hotfixes and support until April 2030.
+
+There is no single product that will replace BizTalk; instead, the full suite of capability in Azure Integration Services (AIS) can provide equivalent functionality in a more modern, scalable, and secure way. Organizations that depend on BizTalk for B2B, EDI, EAI, and messaging workloads need to begin planning their migration paths now — not when the clock runs out and support is no longer available.
+
+More information about the BizTalk lifecycle can be found at:
+[Microsoft BizTalk Server Product Lifecycle Update | Microsoft Community Hub](https://techcommunity.microsoft.com/blog/integrationsonazureblog/microsoft-biztalk-server-product-lifecycle-update/4478559)
 
 ### Azure Integration Services: the cloud-native successor
 
