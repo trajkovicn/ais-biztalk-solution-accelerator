@@ -259,6 +259,16 @@ In regulated industries (finance, healthcare, government), BizTalk environments 
 
 ## Deploy to Azure
 
+### Prerequisites
+
+Before clicking the button below, ensure the following are in place:
+
+- **Azure subscription** — you need an active Azure subscription. If you don't have one, [create a free account](https://azure.microsoft.com/free/).
+- **Resource Group** — the template deploys into an existing Resource Group. Create one in the Azure portal or via CLI (`az group create`) before proceeding.
+- **RBAC permissions** — the user clicking the button must have **Owner** or **Contributor** role assigned on the target Resource Group. Without one of these roles, the deployment will fail because it cannot create or configure resources.
+- **Resource provider registrations** — the subscription must have the following resource providers registered: `Microsoft.Logic`, `Microsoft.ServiceBus`, `Microsoft.Storage`, `Microsoft.KeyVault`, `Microsoft.OperationalInsights`, and `Microsoft.Web`. Most subscriptions register these automatically on first use, but restricted subscriptions may require an administrator to register them manually.
+- **Sufficient quota** — verify that the target region has available quota for the resources being deployed (e.g., storage accounts, Key Vault instances). Quota limits rarely block small deployments, but enterprise subscriptions with policies may enforce caps.
+
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ftrajkovicn%2Fais-biztalk-solution-accelerator%2Fmain%2Finfra%2Farm%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Ftrajkovicn%2Fais-biztalk-solution-accelerator%2Fmain%2Finfra%2Farm%2FcreateUiDefinition.json)
 
 ---
