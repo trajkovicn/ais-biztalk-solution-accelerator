@@ -21,25 +21,29 @@ if (string.IsNullOrWhiteSpace(subscriptionId) || string.IsNullOrWhiteSpace(resou
     string.IsNullOrWhiteSpace(integrationAccount) || string.IsNullOrWhiteSpace(location) ||
     string.IsNullOrWhiteSpace(mapFile))
 {
-    Console.WriteLine("Usage:
-" +
-        "  dotnet run -- --subscriptionId <subId> --resourceGroup <rg> --integrationAccount <iaName> --location <region> --mapFile <path> [--mapName <name>]
-
-" +
-        "Auth: DefaultAzureCredential (az login / VS / MI). You can set AZURE_SUBSCRIPTION_ID env var.
-");
+    Console.WriteLine("Usage:\n" +
+        "  dotnet run -- --subscriptionId <subId> --resourceGroup <rg> --integrationAccount <iaName> --location <region> --mapFile <path> [--mapName <name>] [--cloud usgov|public]\n\n" +
+        "Cloud: defaults to Azure Government (usgov). Use --cloud public or AZURE_CLOUD=public for commercial.\n" +
+        "Auth: DefaultAzureCredential (az login / VS / MI). You can set AZURE_SUBSCRIPTION_ID env var.\n");
     return;
 }
 
-var credential = new DefaultAzureCredential();
-var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { "https://management.azure.com/.default" }));
+var cloud = (GetArg(args, "--cloud") ?? Environment.GetEnvironmentVariable("AZURE_CLOUD") ?? "usgov").ToLowerInvariant();
+var isGov = cloud is not ("public" or "azurecloud" or "commercial");
+var armEndpoint = isGov ? "https://management.usgovcloudapi.net" : "https://management.azure.com";
+
+var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+{
+    AuthorityHost = isGov ? AzureAuthorityHosts.AzureGovernment : AzureAuthorityHosts.AzurePublicCloud
+});
+var token = await credential.GetTokenAsync(new TokenRequestContext(new[] { $"{armEndpoint}/.default" }));
 
 using var http = new HttpClient();
 http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
 
 var mapContent = await File.ReadAllTextAsync(mapFile);
 
-var uri = $"https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.Logic/integrationAccounts/{integrationAccount}/maps/{mapName}?api-version=2019-05-01";
+var uri = $"{armEndpoint}/subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.Logic/integrationAccounts/{integrationAccount}/maps/{mapName}?api-version=2019-05-01";
 
 var payload = new
 {
@@ -58,8 +62,7 @@ var respText = await resp.Content.ReadAsStringAsync();
 
 if (!resp.IsSuccessStatusCode)
 {
-    Console.Error.WriteLine($"Upload failed ({(int)resp.StatusCode} {resp.ReasonPhrase})
-{respText}");
+    Console.Error.WriteLine($"Upload failed ({(int)resp.StatusCode} {resp.ReasonPhrase}){Environment.NewLine}{respText}");
     Environment.ExitCode = 1;
     return;
 }

@@ -268,13 +268,33 @@ In regulated industries (finance, healthcare, government), BizTalk environments 
 
 Before clicking the button below, ensure the following are in place:
 
-- **Azure subscription** — you need an active Azure subscription. If you don't have one, [create a free account](https://azure.microsoft.com/free/).
-- **Resource Group** — the template deploys into an existing Resource Group. Create one in the Azure portal or via CLI (`az group create`) before proceeding.
+- **Azure subscription** — you need an active **Azure Government** subscription (this fork defaults to Azure Government, region `usgovvirginia`). Commercial Azure is still supported — see [Deploying to Azure Government](#deploying-to-azure-government).
+- **Resource Group** — the template deploys into an existing Resource Group. Create one in the Azure Government portal or via CLI (`az group create --name <rg> --location usgovvirginia`) before proceeding.
 - **RBAC permissions** — the user clicking the button must have **Owner** or **Contributor** role assigned on the target Resource Group. Without one of these roles, the deployment will fail because it cannot create or configure resources.
 - **Resource provider registrations** — the subscription must have the following resource providers registered: `Microsoft.Logic`, `Microsoft.ServiceBus`, `Microsoft.Storage`, `Microsoft.KeyVault`, `Microsoft.OperationalInsights`, and `Microsoft.Web`. Most subscriptions register these automatically on first use, but restricted subscriptions may require an administrator to register them manually.
 - **Sufficient quota** — verify that the target region has available quota for the resources being deployed (e.g., storage accounts, Key Vault instances). Quota limits rarely block small deployments, but enterprise subscriptions with policies may enforce caps.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ftrajkovicn%2Fais-biztalk-solution-accelerator%2Fmain%2Finfra%2Farm%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Ftrajkovicn%2Fais-biztalk-solution-accelerator%2Fmain%2Finfra%2Farm%2FcreateUiDefinition.json)
+[![Deploy to Azure Government](https://aka.ms/deploytoazurebutton)](https://portal.azure.us/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ftrajkovicn%2Fais-biztalk-solution-accelerator%2Ftrajkovicn-azure-gov-migration%2Finfra%2Farm%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Ftrajkovicn%2Fais-biztalk-solution-accelerator%2Ftrajkovicn-azure-gov-migration%2Finfra%2Farm%2FcreateUiDefinition.json)
+
+> The link above targets the `trajkovicn-azure-gov-migration` branch and the Azure Government portal (`portal.azure.us`). Update the branch segment if the branch is renamed or merged.
+
+### Deploying to Azure Government
+
+The Bicep templates are cloud-aware. Private DNS zone names are derived from `environment()`, so they resolve correctly in either cloud, and defaults are `location = usgovvirginia` and `regionCode = usgv`.
+
+```powershell
+az cloud set --name AzureUSGovernment
+az login
+az group create --name <rg> --location usgovvirginia
+az deployment group create --resource-group <rg> --template-file infra/bicep/main.bicep --parameters ou=fin biz=tax keyVaultAdminObjectId=<objectId>
+```
+
+To deploy to commercial Azure instead, run `az cloud set --name AzureCloud` and pass `location=<region> regionCode=<code>`. The helper tools default to Azure Government; pass `--cloud public` (or set `AZURE_CLOUD=public`) for commercial.
+
+Azure Government notes:
+
+- Verify that the Logic Apps managed connectors (`azureblob`, `servicebus`) and the Bicep resource API versions are available in your Gov region before production use.
+- Available regions: `usgovvirginia`, `usgovarizona`, `usgovtexas`.
 
 ---
 

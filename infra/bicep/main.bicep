@@ -13,14 +13,14 @@ param app string = 'ais'
 @description('Environment code (e.g., dev, tst, uat, stg, prd).')
 param env string = 'dev'
 
-@description('Region short code for naming (e.g., eus, wus2). Customer-supplied to match internal conventions.')
-param regionCode string
+@description('Region short code for naming (e.g., usgv, usga, eus). Defaults to US Gov Virginia.')
+param regionCode string = 'usgv'
 
 @description('Instance number for uniqueness, e.g., 001.')
 param instance string = '001'
 
-@description('Azure deployment location (actual Azure region). Defaults to the resource group location.')
-param location string = resourceGroup().location
+@description('Azure deployment location (actual Azure region). Defaults to US Gov Virginia; override for other Gov (usgovarizona, usgovtexas) or commercial regions.')
+param location string = 'usgovvirginia'
 
 @description('Deploy an Integration Account for schemas/maps (XSLT/Liquid), partners, agreements, certificates.')
 param deployIntegrationAccount bool = true
@@ -91,8 +91,8 @@ module st 'modules/storage.bicep' = {
   }
 }
 
-var storageKey = listKeys(st.outputs.id, '2025-06-01').keys[0].value
-var sbKeys = listKeys(sb.outputs.authRuleId, '2022-10-01-preview')
+var storageKey = listKeys(resourceId('Microsoft.Storage/storageAccounts', storageAccountName), '2025-06-01').keys[0].value
+var sbKeys = listKeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', serviceBusNamespaceName, 'logicapps-dev'), '2022-10-01-preview')
 var sbConnectionString = sbKeys.primaryConnectionString
 
 module kv 'modules/keyvault.bicep' = {

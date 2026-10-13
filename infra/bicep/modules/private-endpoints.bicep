@@ -28,18 +28,24 @@ param keyVaultName string
 // Private DNS Zones
 // ══════════════════════════════════════════════════════════════
 
+// Zone names are derived from the active cloud (commercial, US Gov, China) via environment().
+// Commercial: core.windows.net / .vault.azure.net
+// Azure Gov:  core.usgovcloudapi.net / .vault.usgovcloudapi.net
+var storageSuffix = environment().suffixes.storage
+var vaultZoneName = 'privatelink.vaultcore${substring(environment().suffixes.keyvaultDns, indexOf(environment().suffixes.keyvaultDns, '.vault') + 6)}'
+
 resource dnsBlob 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.blob.core.windows.net'
+  name: 'privatelink.blob.${storageSuffix}'
   location: 'global'
 }
 
 resource dnsFile 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.file.core.windows.net'
+  name: 'privatelink.file.${storageSuffix}'
   location: 'global'
 }
 
 resource dnsVault 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: 'privatelink.vaultcore.azure.net'
+  name: vaultZoneName
   location: 'global'
 }
 

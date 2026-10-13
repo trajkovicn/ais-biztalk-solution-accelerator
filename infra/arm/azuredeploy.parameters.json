@@ -15,7 +15,10 @@
       "value": "dev"
     },
     "regionCode": {
-      "value": "eus"
+      "value": "usgv"
+    },
+    "location": {
+      "value": "usgovvirginia"
     },
     "instance": {
       "value": "001"

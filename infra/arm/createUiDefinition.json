@@ -65,7 +65,8 @@
             "name": "regionCode",
             "type": "Microsoft.Common.TextBox",
             "label": "Region code (naming)",
-            "toolTip": "Example: eus, wus2",
+            "toolTip": "Example: usgv (US Gov Virginia), usga (US Gov Arizona)",
+            "defaultValue": "usgv",
             "constraints": {
               "required": true,
               "validations": [
