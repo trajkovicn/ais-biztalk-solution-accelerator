@@ -5,7 +5,7 @@ param name string
 param location string
 
 @description('VNet address space (CIDR)')
-param addressPrefix string = '10.0.0.0/22'
+param addressPrefix string = '10.0.0.0/23'
 
 @description('Deploy optional Azure DNS Private Resolver subnets')
 param deployDnsResolverSubnets bool = false

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.46.1.21595",
-      "templateHash": "16248016204488068495"
+      "templateHash": "968388225625944451"
     }
   },
   "parameters": {
@@ -97,7 +97,7 @@
     },
     "vnetAddressPrefix": {
       "type": "string",
-      "defaultValue": "10.0.0.0/22",
+      "defaultValue": "10.0.0.0/23",
       "metadata": {
         "description": "VNet address space (CIDR). Only used when deployVnet is true."
       }
@@ -187,7 +187,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.46.1.21595",
-              "templateHash": "15761265093769164901"
+              "templateHash": "15363284024335475191"
             }
           },
           "parameters": {
@@ -205,7 +205,7 @@
             },
             "addressPrefix": {
               "type": "string",
-              "defaultValue": "10.0.0.0/22",
+              "defaultValue": "10.0.0.0/23",
               "metadata": {
                 "description": "VNet address space (CIDR)"
               }

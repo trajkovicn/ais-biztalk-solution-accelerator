@@ -232,7 +232,7 @@ BizTalk provides **Business Activity Monitoring (BAM)** for tracking, **Health a
 
 BizTalk Server typically sits inside a corporate network, with firewall rules controlling access to adapters and endpoints. There is no built-in cloud networking — network segmentation is handled entirely outside BizTalk via Windows Firewall, corporate routers, and perimeter appliances.
 
-**Azure Virtual Network (VNet)** brings that same isolation model into the cloud. When `deployVnet` is set to `true`, the accelerator provisions a `/22` VNet with purpose-built subnets:
+**Azure Virtual Network (VNet)** brings that same isolation model into the cloud. When `deployVnet` is set to `true`, the accelerator provisions a `/23` VNet with purpose-built subnets:
 
 | Subnet                      | Default CIDR    | Purpose                                                                                           |
 | --------------------------- | --------------- | ------------------------------------------------------------------------------------------------- |

@@ -13,7 +13,7 @@ param integrationAccountSku = 'Basic'
 // Object ID (GUID) of a user or group to administer secrets in the Key Vault
 param keyVaultAdminObjectId = '00000000-0000-0000-0000-000000000000'
 
-// Virtual Network — set deployVnet = true to provision a /22 VNet with subnets
+// Virtual Network — set deployVnet = true to provision a /23 VNet with subnets
 param deployVnet = false
-// param vnetAddressPrefix = '10.0.0.0/22'   // default
+// param vnetAddressPrefix = '10.0.0.0/23'   // default
 // param deployDnsResolverSubnets = false      // set true if you need DNS Private Resolver subnets

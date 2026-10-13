@@ -36,7 +36,7 @@ param keyVaultAdminObjectId string
 param deployVnet bool = false
 
 @description('VNet address space (CIDR). Only used when deployVnet is true.')
-param vnetAddressPrefix string = '10.0.0.0/22'
+param vnetAddressPrefix string = '10.0.0.0/23'
 
 @description('Deploy optional Azure DNS Private Resolver subnets inside the VNet.')
 param deployDnsResolverSubnets bool = false
